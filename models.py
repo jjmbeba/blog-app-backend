@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -17,6 +18,11 @@ class User(Base):
     posts = relationship("Post", back_populates="author")
     favorites = relationship("Favorite", back_populates="user")
     comments = relationship("Comment", back_populates='author')
+    following = relationship("Follows", foreign_keys="[Follows.follower_id]", back_populates="follower",
+                             cascade="all, delete-orphan")
+    followers = relationship("Follows", foreign_keys="[Follows.followed_id]", back_populates="followed",
+                             cascade="all, delete-orphan")
+
 
 class Tag(Base):
     __tablename__ = "tags"
@@ -26,12 +32,16 @@ class Tag(Base):
 
     posts = relationship("Post", secondary="post_tags", back_populates="tags")
 
-# class Follows(Base):
-#     __tablename__ = "follows"
 
-#     id = Column(Integer, primary_key=True, index=True)
-#     follower_id = Column(Integer, ForeignKey("users.id"))
-#     followed_id = Column(Integer, ForeignKey("users.id"))
+class Follows(Base):
+    __tablename__ = "follows"
+
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id"))
+    followed_id = Column(Integer, ForeignKey("users.id"))
+    follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
+    followed = relationship("User", foreign_keys=[followed_id], back_populates="followers")
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -49,6 +59,7 @@ class Post(Base):
     tags = relationship("Tag", secondary="post_tags", back_populates="posts")
     favorites = relationship("Favorite", back_populates="post")
 
+
 class Favorite(Base):
     __tablename__ = "favorites"
 
@@ -61,6 +72,7 @@ class Favorite(Base):
 
     user = relationship("User", back_populates="favorites")
     post = relationship("Post", back_populates="favorites")
+
 
 class Comment(Base):
     __tablename__ = "comments"
@@ -76,8 +88,8 @@ class Comment(Base):
 
     author = relationship("User", back_populates='comments')
 
-post_tags = Table('post_tags', Base.metadata,
-    Column('post_id', ForeignKey('posts.id'), primary_key=True),
-    Column('tag_id', ForeignKey('tags.id'), primary_key=True)
-)
 
+post_tags = Table('post_tags', Base.metadata,
+                  Column('post_id', ForeignKey('posts.id'), primary_key=True),
+                  Column('tag_id', ForeignKey('tags.id'), primary_key=True)
+                  )

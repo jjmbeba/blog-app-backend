@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import models, schemas
 
 def create_post(db:Session, post: schemas.PostCreate, user_id:int):
-    db_post = models.Post(**post.model_dump(), user_id)
+    db_post = models.Post(**post.model_dump(), user_id=user_id)
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
@@ -28,3 +28,14 @@ def delete_post(db:Session, post_id: int):
     db.commit()
 
     return {}, 204
+
+def update_post(db:Session, post_id:int, post: schemas.PostCreate):
+    found_post = get_post(db, post_id)
+
+    for key, value in post.model_dump().items():
+        setattr(found_post, key, value)
+
+    db.commit()
+    db.refresh(found_post)
+    
+    return found_post

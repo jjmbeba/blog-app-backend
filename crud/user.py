@@ -52,3 +52,7 @@ def delete_user(db: Session, user_id: int):
     db.delete(db_user)
     db.commit()
     return {}, 204
+
+def get_posts_for_user(db:Session, user_id:int):
+    db_user = get_user(db, user_id)
+    return db_user.posts

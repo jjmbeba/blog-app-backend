@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-import models, schemas
+import models
+import schemas
 
 def create_post(db:Session, post: schemas.PostCreate, user_id:int):
     db_post = models.Post(**post.model_dump(), user_id=user_id)

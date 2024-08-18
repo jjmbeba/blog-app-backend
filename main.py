@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Depends
 
+import crud.comment
+import crud.favorite
 import crud.post
 import crud.tag
 import crud.user
@@ -75,3 +77,30 @@ def get_tags(db:Session = Depends(get_db)):
 @app.post('/tags')
 def create_tag(tag: schemas.TagCreate, db:Session = Depends(get_db)):
     return crud.tag.create_tag(db, tag)
+
+@app.delete('/tags/{tag_id}')
+def delete_tag(tag_id:int, db:Session = Depends(get_db)):
+    return crud.tag.delete_tag(db, tag_id)
+
+
+#Comment routes
+@app.post('/posts/{post_id}/comments', response_model=schemas.Comment)
+def create_comment_for_post(post_id:int, comment: schemas.CommentCreate, db:Session = Depends(get_db)):
+    return crud.comment.create_comment(db, comment, post_id)
+
+@app.get('/posts/{post_id}/comments', response_model=list[schemas.CommentWithAttributes])
+def read_post_comments(post_id:int, db:Session = Depends(get_db)):
+    return crud.comment.get_post_comments(db, post_id)
+
+#Favorite routes
+@app.post('/favorites', response_model=schemas.Favorite)
+def create_favorite(favorite: schemas.FavoriteCreate, db:Session = Depends(get_db)):
+    return crud.favorite.create_favorite(db, favorite)
+
+@app.get('/users/{user_id}/favorites', response_model=list[schemas.FavoriteWithAttributes])
+def read_user_favorites(user_id:int, db:Session = Depends(get_db)):
+    return crud.favorite.get_user_favorites(db, user_id)
+
+@app.delete('/favorites/{favorite_id}')
+def delete_user_favorite(favorite_id: int, db:Session = Depends(get_db)):
+    return crud.favorite.delete_user_favorite(db, favorite_id)
